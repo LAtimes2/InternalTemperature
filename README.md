@@ -21,4 +21,5 @@ void loop()
 ```
 
 For more details and information on calibration, see
+
 https://github.com/LAtimes2/InternalTemperature/blob/master/InternalTemperature.pdf 
