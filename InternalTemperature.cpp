@@ -70,53 +70,6 @@ bool InternalTemperature::begin (bool lowPowerMode) {
   analogReadResolution(16);
   analogReadAveraging(32);
 
-Serial.print("VTemp25:");
-Serial.print(vTemp25, 4);
-Serial.print(", slope:");
-Serial.println(slope, 5);
-
-Serial.println(toFahrenheit(convertTemperatureC(0.719)));  
-Serial.println(convertTemperatureC(0.719));  
-Serial.println(" single point cal -1");
-if (!singlePointCalibrationF(75.0, 76.8)) {
-  Serial.println("Error - sPC");  
-}
-Serial.print("VTemp25:");
-Serial.print(vTemp25, 4);
-Serial.print(", slope:");
-Serial.println(slope, 5);
-
-Serial.println(toFahrenheit(convertTemperatureC(0.719)));  
-if (!singlePointCalibrationC(20.0, 19.0, true)) {
-  Serial.println("Error - sPC");  
-}
-Serial.print("VTemp25:");
-Serial.print(vTemp25, 4);
-Serial.print(", slope:");
-Serial.println(slope, 5);
-
-Serial.println(convertTemperatureC(0.719));  
-
-Serial.println(" dual point cal -1");
-if (!dualPointCalibrationC(25.0, 25.0, 25.0, 19.0, true)) {
-  Serial.println("Error - sPC");  
-}
-Serial.print("VTemp25:");
-Serial.print(vTemp25, 4);
-Serial.print(", slope:");
-Serial.println(slope, 5);
-
-Serial.println(convertTemperatureC(0.719));  
-
-Serial.println(" dual point cal LC");
-if (!dualPointCalibrationF(46.2, 42.3, 70.5, 68.6, true)) {
-  Serial.println("Error - sPC");  
-}
-Serial.print("VTemp25:");
-Serial.print(vTemp25, 5);
-Serial.print(", slope:");
-Serial.println(slope, 6);
-
   return true;
 }
 
@@ -211,7 +164,6 @@ bool InternalTemperature::dualPointCalibrationC (
   float deltaActual = actualTemperature2C - actualTemperature1C;
   float deltaMeasured = measuredTemperature2C - measuredTemperature1C;
   float newSlope;
-  float newOffset;
   bool returnValue = false;
 
   float originalSlope = slope;
@@ -224,10 +176,6 @@ bool InternalTemperature::dualPointCalibrationC (
 
   // adjust slope first, then the offset
   newSlope = originalSlope * deltaMeasured / deltaActual;
-Serial.println(originalSlope, 5);
-Serial.println(deltaMeasured);
-Serial.println(deltaActual);
-Serial.println(newSlope, 6);
 
   if (setSlope (newSlope)) {
 
