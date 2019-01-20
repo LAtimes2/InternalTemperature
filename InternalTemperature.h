@@ -1,5 +1,5 @@
 /* InternalTemperature - read internal temperature of ARM processor
- * Copyright (C) 2017 LAtimes2
+ * Copyright (C) 2019 LAtimes2
  *
  * MIT License
  *
@@ -32,6 +32,9 @@
 #ifndef InternalTemperature_h_
 #define InternalTemperature_h_
 
+#define TEMPERATURE_MAX_ACCURACY 0
+#define TEMPERATURE_NO_ADC_SETTING_CHANGES 1
+
 class InternalTemperature
 {
 public:
@@ -40,7 +43,14 @@ public:
   //
   // Main functions
   //
-  bool begin (bool lowPowerMode = false);
+
+  // Note: If settings_type is TEMPERATURE_MAX_ACCURACY, it will change
+  //       the ADC settings to be optimal for reading temperature.
+  //       If settings_type is TEMPERATURE_NO_ADC_SETTING_CHANGES, it will
+  //       keep the default ADC settings or any other settings changes.
+  //       readTemperature will detect the current settings and use them.
+  bool begin (int temperature_settings_type = TEMPERATURE_MAX_ACCURACY);
+
   float readTemperatureC (void);
   float readTemperatureF (void);
 
@@ -66,7 +76,8 @@ public:
   //
   float convertTemperatureC (float volts);
   static float convertUncalibratedTemperatureC (float volts);
-  static float readRawVoltage (void);
+  static float readRawTemperatureVoltage (void);
+  static float readRawVoltage (int signalNumber);
   static float readUncalibratedTemperatureC (void);
   static float readUncalibratedTemperatureF (void);
   static float toCelsius (float temperatureFahrenheit);
@@ -74,6 +85,7 @@ public:
 
 private:
   static float convertTemperatureC (float volts, float vTemp25, float slope);
+  static void enableBandgap (void);
 
 private:
   float slope;

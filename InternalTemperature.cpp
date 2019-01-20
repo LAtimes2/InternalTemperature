@@ -1,5 +1,5 @@
 /* InternalTemperature - read internal temperature of ARM processor
- * Copyright (C) 2017 LAtimes2
+ * Copyright (C) 2019 LAtimes2
  *
  * MIT License
  *
@@ -36,8 +36,10 @@
 
 #if defined(__MK64FX512__) || defined(__MK66FX1M0__)   // 3.5, 3.6
   #define TEMPERATURE_PIN 70
+  #define VREF_PIN 71
 #else
   #define TEMPERATURE_PIN 38
+  #define VREF_PIN 39
 #endif
 
 // Constructor
@@ -47,47 +49,102 @@ InternalTemperature::InternalTemperature()
 {
 }
 
-bool InternalTemperature::begin (bool lowPowerMode) {
+bool InternalTemperature::begin (int temperature_settings_type) {
 
-// need to turn on voltage reference in low power mode
-#if not defined(__MKL26Z64__)   // not Teensy LC 
+  // TeensyLC needs the Bandgap voltage for measurements. All Teensy's need
+  // the Bandgap turned on in low power mode.
+  // So always turn it on. If it is already on, it doesn't hurt anything.
+  enableBandgap ();
 
-  bool lowSpeed = (F_CPU == 2000000);
- 
-  if (lowPowerMode || lowSpeed)
+  if (temperature_settings_type == TEMPERATURE_MAX_ACCURACY)
   {
-    // needed delay to make it work. Don't know why.
-    // Otherwise it never returned from analogReference call below.
-    delay (50);
-    PMC_REGSC |= PMC_REGSC_BGEN;
-    // needed delay to make it work. Don't know why
-    delay (50);
-  }
-#endif
+    // set to internal 1.2V reference
+    analogReference(INTERNAL);
 
-  // internal chip temperature
-  analogReference(INTERNAL);
-  analogReadResolution(16);
-  analogReadAveraging(32);
+    // set to maximum number of bits
+    analogReadResolution(16);
+
+    // set to maximum averaging
+    analogReadAveraging(32);
+  }
 
   return true;
 }
 
-float InternalTemperature::readRawVoltage () {
+void InternalTemperature::enableBandgap (void) {
+
+  // Bandgap enable
+  PMC_REGSC |= PMC_REGSC_BGEN | PMC_REGSC_BGBE;
+
+  // Delay for regulator to start up
+  delay (2);
+}
+
+float InternalTemperature::readRawTemperatureVoltage () {
+  return readRawVoltage (TEMPERATURE_PIN);
+}
+
+float InternalTemperature::readRawVoltage (int signalNumber) {
 
 #if defined(__MKL26Z64__)   // Teensy LC 
-  const float vRef = 3.3;
+  // uses Bandgap voltage since it doesn't have a reference voltage
+  const float vRef = 1.0;
 #else
   const float vRef = 1.195;
 #endif
 
   int analogValue;
+  int analogVref;
   float volts;
+  float floatVref;
 
-  analogValue = analogRead(TEMPERATURE_PIN);
+  int previousADC0_CFG1 = ADC0_CFG1;
+  int previousADC0_CFG2 = ADC0_CFG2;
 
-  // analog value of 0x10000 = Vref in volts
-  volts = (vRef / 0x10000) * analogValue;
+  //
+  // set to max sample time (for best accuracy). This is
+  // especially needed when using external Vref.
+  //
+
+  // enable long sample times
+  ADC0_CFG1 |= ADC_CFG1_ADLSMP;
+
+  // 00 = 32 clocks
+  ADC0_CFG2 &= ~ADC_CFG2_ADLSTS(3);
+
+  //
+  // read temperature
+  //
+  analogValue = analogRead(signalNumber);
+
+  // read Vref
+  analogVref = analogRead(VREF_PIN);
+
+/*
+  Serial.print(" 0x");
+  Serial.print(analogVref, HEX);
+  Serial.print(" ");
+
+  Serial.print(" 0x");
+  Serial.print(analogValue, HEX);
+  Serial.print(" ");
+*/
+  floatVref = analogVref;
+
+  // compute scaling for Least Significant Bit
+  float voltsPerBit = vRef / floatVref;
+
+  // convert analog temperature reading to volts
+  volts = analogValue * voltsPerBit;
+
+/*
+  Serial.print(", ");
+  Serial.print(volts, 3);
+  Serial.print(" V ");
+*/
+  // restore previous values
+  ADC0_CFG1 = previousADC0_CFG1;
+  ADC0_CFG2 = previousADC0_CFG2;
 
   return volts;
 }
@@ -111,7 +168,7 @@ float InternalTemperature::convertUncalibratedTemperatureC (float volts) {
 }
 
 float InternalTemperature::readTemperatureC () {
-  return convertTemperatureC (readRawVoltage ());
+  return convertTemperatureC (readRawTemperatureVoltage ());
 }
 
 float InternalTemperature::readTemperatureF () {
@@ -120,7 +177,7 @@ float InternalTemperature::readTemperatureF () {
 }
 
 float InternalTemperature::readUncalibratedTemperatureC () {
-  return convertUncalibratedTemperatureC (readRawVoltage ());
+  return convertUncalibratedTemperatureC (readRawTemperatureVoltage ());
 }
 
 float InternalTemperature::readUncalibratedTemperatureF () {
