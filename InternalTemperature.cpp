@@ -23,7 +23,7 @@
  */
 
 #include "InternalTemperature.h"
-#include "arduino.h"
+#include "Arduino.h"
 
 // Teensy 3.0,3.1,3.2
 #if defined(__MK20DX128__) || defined(__MK20DX256__)  
