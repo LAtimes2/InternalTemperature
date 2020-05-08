@@ -1,5 +1,5 @@
 /* InternalTemperature - read internal temperature of ARM processor
- * Copyright (C) 2019 LAtimes2
+ * Copyright (C) 2020 LAtimes2
  *
  * MIT License
  *
@@ -24,6 +24,9 @@
 
 #include "InternalTemperature.h"
 #include "Arduino.h"
+
+// Teensy 4.0 is at the end
+#if not defined(__IMXRT1062__)
 
 // Teensy 3.0,3.1,3.2
 #if defined(__MK20DX128__) || defined(__MK20DX256__)  
@@ -297,6 +300,81 @@ int InternalTemperature::getUniqueID () {
   return SIM_UIDL;
 }
 
+#else   // Teensy 4
+
+//
+// Teensy 4.0 uses tempMon, so this is just a thin wrapper around it for backward compatibility
+//
+
+// Constructor
+InternalTemperature::InternalTemperature()
+{
+}
+
+bool InternalTemperature::begin (int temperature_settings_type) {
+   return true;
+}
+
+float InternalTemperature::readTemperatureC () {
+  return tempmonGetTemp();
+}
+
+float InternalTemperature::readTemperatureF () {
+  // convert celsius to fahrenheit
+  return toFahrenheit(readTemperatureC());
+}
+
+//
+//  Calibration functions - Teensy 4 comes calibrated from the factory, so does nothing
+//
+
+bool InternalTemperature::singlePointCalibrationC (
+  float actualTemperatureC, float measuredTemperatureC, bool fromDefault) {
+   return true;
+}
+
+bool InternalTemperature::singlePointCalibrationF (
+  float actualTemperatureF, float measuredTemperatureF, bool fromDefault) {
+   return true;
+}
+
+bool InternalTemperature::dualPointCalibrationC (
+  float actualTemperature1C, float measuredTemperature1C,
+  float actualTemperature2C, float measuredTemperature2C, bool fromDefault) {
+   return true;
+}
+
+bool InternalTemperature::dualPointCalibrationF (
+  float actualTemperature1F, float measuredTemperature1F,
+  float actualTemperature2F, float measuredTemperature2F, bool fromDefault) {
+   return true;
+}
+
+
+bool InternalTemperature::setVTemp25 (float volts) {
+  return true;
+}
+
+bool InternalTemperature::setSlope (float voltsPerDegreeC) {
+  return true;
+}
+
+float InternalTemperature::getVTemp25 () {
+  return 0.0;
+}
+
+float InternalTemperature::getSlope () {
+  return 0.0;
+}
+
+// Unique ID can be used to set calibration values by serial number
+int InternalTemperature::getUniqueID () {
+  // TODO: use HW_OCOTP_CFG0?
+  return 0;
+}
+
+#endif  // if Teensy 4.0 else
+
 // Utilities
 
 float InternalTemperature::toCelsius (float temperatureFahrenheit) {
@@ -308,5 +386,3 @@ float InternalTemperature::toFahrenheit (float temperatureCelsius) {
   // convert celsius to fahrenheit
   return temperatureCelsius * 9.0 / 5.0 + 32;
 }
-
-
