@@ -41,12 +41,8 @@ ILI9341_t3 display = ILI9341_t3(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCLK, TFT
 Adafruit_ILI9341 display = Adafruit_ILI9341(TFT_CS, TFT_DC);
 #endif
 
-InternalTemperature temperature;
-
 void setup()
 {
-  temperature.begin();
-
   //**********
   // Calibration can go here
   //**********
@@ -78,16 +74,16 @@ void loop()
   REDUCED_CPU_BLOCK(dummyConfig) {
 
     // need to call begin again to reset voltage reference
-    temperature.begin(true);
+    InternalTemperature.begin(true);
 
     while (1) {
       // print to TFT
       display.setCursor(40,20);
 
       if (useCelsius) {
-        display.print(temperature.readTemperatureC(), 1);
+        display.print(InternalTemperature.readTemperatureC(), 1);
       } else {
-        display.print(temperature.readTemperatureF(), 1);
+        display.print(InternalTemperature.readTemperatureF(), 1);
         scale = 'F';    
       }
 
@@ -99,4 +95,3 @@ void loop()
     }
   }
 }
-

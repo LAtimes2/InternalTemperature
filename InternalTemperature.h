@@ -1,5 +1,5 @@
 /* InternalTemperature - read internal temperature of ARM processor
- * Copyright (C) 2019 LAtimes2
+ * Copyright (C) 2020 LAtimes2
  *
  * MIT License
  *
@@ -23,10 +23,9 @@
  */
 
 /* Typical usage:
- *   InternalTemperature temperature;
+ *   #include "InternalTemperature.h"
  *   
- *   temperature.begin();
- *   Serial.println(temperature.readTemperatureC());
+ *   Serial.println(InternalTemperature.readTemperatureC());
  */
 
 #ifndef InternalTemperature_h_
@@ -35,10 +34,10 @@
 #define TEMPERATURE_MAX_ACCURACY 0
 #define TEMPERATURE_NO_ADC_SETTING_CHANGES 1
 
-class InternalTemperature
+class InternalTemperatureClass
 {
 public:
-  InternalTemperature();
+  InternalTemperatureClass();
 
   //
   // Main functions
@@ -49,10 +48,24 @@ public:
   //       If settings_type is TEMPERATURE_NO_ADC_SETTING_CHANGES, it will
   //       keep the default ADC settings or any other settings changes.
   //       readTemperature will detect the current settings and use them.
-  bool begin (int temperature_settings_type = TEMPERATURE_MAX_ACCURACY);
+  static bool begin (int temperature_settings_type = TEMPERATURE_MAX_ACCURACY);
 
-  float readTemperatureC (void);
-  float readTemperatureF (void);
+  static float readTemperatureC (void);
+  static float readTemperatureF (void);
+
+  //
+  // functions to handle going above a high temperature
+  //
+  static int attachHighTempInterruptCelsius (float triggerTemperature, void (*function)(void));
+  static int attachHighTempInterruptFahrenheit (float triggerTemperature, void (*function)(void));
+  static int detachHighTempInterrupt (void);
+
+  //
+  // functions to handle going below a low temperature
+  //
+  static int attachLowTempInterruptCelsius (float triggerTemperature, void (*function)(void));
+  static int attachLowTempInterruptFahrenheit (float triggerTemperature, void (*function)(void));
+  static int detachLowTempInterrupt (void);
 
   //
   //  Calibration functions
@@ -74,7 +87,7 @@ public:
   //
   // low level utilities
   //
-  float convertTemperatureC (float volts);
+  static float convertTemperatureC (float volts);
   static float convertUncalibratedTemperatureC (float volts);
   static float readRawTemperatureVoltage (void);
   static float readRawVoltage (int signalNumber);
@@ -84,12 +97,45 @@ public:
   static float toFahrenheit (float temperatureCelsius);
 
 private:
-  static float convertTemperatureC (float volts, float vTemp25, float slope);
-  static void enableBandgap (void);
+  enum temperatureAlarmType {
+    LowTemperature,
+    HighTemperature
+  };
+
+  enum alarmType {
+    NoAlarm,
+    LowTempAlarm,
+    HighTempAlarm,
+    BothAlarms
+  };
 
 private:
-  float slope;
-  float vTemp25;
+  static float convertTemperatureC (float volts, float vTemp25, float slope);
+  static void enableBandgap (void);
+  static void getRegisterCounts (int *currentCount, int *highTempCount, int *lowTempCount);
+
+  static void alarmISR ();
+  static uint32_t celsiusToCount (float temperatureCelsius);
+
+  // Teensy 3
+  static float computeVoltsPerBit ();
+  static int attachInterruptCelsius (float triggerTemperature, temperatureAlarmType whichTemperature);
+
+private:
+  static bool initialized;
+  static int temperatureSettingsType;
+  static float slope;
+  static float vTemp25;
+  static float voltsPerBit;
+
+  typedef void (*voidFuncPtr)(void);
+
+  static alarmType alarm;
+  static voidFuncPtr highTempISR;
+  static voidFuncPtr lowTempISR;
 };
+
+// create instance of the class
+extern InternalTemperatureClass InternalTemperature;
 
 #endif

@@ -4,20 +4,17 @@
 
 #include <InternalTemperature.h>
 
-InternalTemperature temperature;
 boolean celsius = true;
 
 void setup()
 {
   float currentTemperature;
 
-  temperature.begin();
-
   Serial.begin(115200);
   while (!Serial);
 
   Serial.print("Teensy unique id : ");
-  Serial.println(temperature.getUniqueID(), HEX);
+  Serial.println(InternalTemperature.getUniqueID(), HEX);
 
   Serial.print("Enter 1 for Celsius or 2 for Fahrenheit : ");
   while (!Serial.available());
@@ -35,11 +32,11 @@ void setup()
   currentTemperature = Serial.parseFloat();
 
   if (celsius) {
-    if (!temperature.singlePointCalibrationC(currentTemperature, temperature.readTemperatureC())) {
+    if (!InternalTemperature.singlePointCalibrationC(currentTemperature, InternalTemperature.readTemperatureC())) {
       Serial.println(" ERROR - invalid calibration temperature");
     }
   } else {
-    if (!temperature.singlePointCalibrationF(currentTemperature, temperature.readTemperatureF())) {
+    if (!InternalTemperature.singlePointCalibrationF(currentTemperature, InternalTemperature.readTemperatureF())) {
       Serial.println(" ERROR - invalid calibration temperature");
     }
   }
@@ -51,15 +48,15 @@ void setup()
   Serial.println("");
 
   Serial.print("  if (temperature.getUniqueID() == 0x");
-  Serial.print(temperature.getUniqueID(), HEX);
+  Serial.print(InternalTemperature.getUniqueID(), HEX);
   Serial.println(") {");
 
   Serial.print("    temperature.setSlope(");
-  Serial.print(temperature.getSlope(), 6);
+  Serial.print(InternalTemperature.getSlope(), 6);
   Serial.println(");");
 
   Serial.print("    temperature.setVTemp25(");
-  Serial.print(temperature.getVTemp25(), 4);
+  Serial.print(InternalTemperature.getVTemp25(), 4);
   Serial.println(");");
 
   Serial.println("  }");
@@ -70,21 +67,20 @@ void loop()
 {
   Serial.print("Calibrated Temperature: ");
   if (celsius) {
-    Serial.print(temperature.readTemperatureC(), 1);
+    Serial.print(InternalTemperature.readTemperatureC(), 1);
     Serial.print("°C");
   } else {
-    Serial.print(temperature.readTemperatureF(), 1);
+    Serial.print(InternalTemperature.readTemperatureF(), 1);
     Serial.print("°F");
   }
   Serial.print(", Uncalibrated Temperature: ");
   if (celsius) {
-    Serial.print(temperature.readUncalibratedTemperatureC(), 1);
+    Serial.print(InternalTemperature.readUncalibratedTemperatureC(), 1);
     Serial.print("°C");
   } else {
-    Serial.print(temperature.readUncalibratedTemperatureF(), 1);
+    Serial.print(InternalTemperature.readUncalibratedTemperatureF(), 1);
     Serial.print("°F");
   }
   Serial.println("");
   delay(10000);
 }
-
