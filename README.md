@@ -5,7 +5,7 @@ The Kinetis Cortex-M processor on the Teensy 3/LC boards has a built-in temperat
 
 The Teensy 4 has a built-in temperature sensor, along with built-in functions to read temperature. This library provides a wrapper around the built-in functions (to support common code for Teensy 3 and 4).
 
-In addition, the library has hign and low temperature alarm functions to perform actions when temperature limits are exceeded.
+In addition, the library has high and low temperature alarm functions to perform actions when temperature limits are exceeded.
 
 Examples are provided to show how to read temperatures, set alarms, and, for Teensy 4, change the CPU clock speed based on temperature.
 
