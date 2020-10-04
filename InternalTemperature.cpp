@@ -33,7 +33,7 @@ InternalTemperatureClass::voidFuncPtr InternalTemperatureClass::highTempISR = NU
 InternalTemperatureClass::voidFuncPtr InternalTemperatureClass::lowTempISR = NULL;
 
 // singleton instance of the class
-//InternalTemperatureClass InternalTemperature;
+InternalTemperatureClass InternalTemperature;
 
 // Teensy 4.0 is at the end
 #if not defined(__IMXRT1062__)
