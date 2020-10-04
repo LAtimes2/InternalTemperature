@@ -32,6 +32,9 @@ InternalTemperatureClass::alarmType InternalTemperatureClass::alarm = InternalTe
 InternalTemperatureClass::voidFuncPtr InternalTemperatureClass::highTempISR = NULL;
 InternalTemperatureClass::voidFuncPtr InternalTemperatureClass::lowTempISR = NULL;
 
+// singleton instance of the class
+//InternalTemperatureClass InternalTemperature;
+
 // Teensy 4.0 is at the end
 #if not defined(__IMXRT1062__)
 
@@ -600,6 +603,16 @@ float InternalTemperatureClass::readTemperatureC () {
 float InternalTemperatureClass::readTemperatureF () {
   // convert celsius to fahrenheit
   return toFahrenheit(readTemperatureC());
+}
+
+float InternalTemperatureClass::readUncalibratedTemperatureC () {
+  // calibration is internal
+  return readTemperatureC();
+}
+
+float InternalTemperatureClass::readUncalibratedTemperatureF () {
+  // calibration is internal
+  return readTemperatureF();
 }
 
 int InternalTemperatureClass::attachInterruptCelsius (float triggerTemperature, temperatureAlarmType whichTemperature) {
