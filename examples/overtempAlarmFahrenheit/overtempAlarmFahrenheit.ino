@@ -85,7 +85,7 @@ void testHighAlarm (float temperature, bool alarmExpected) {
       Serial.println("triggered - FAILED");
     }
     else {
-      Serial.println("did not trigger as expected");
+      Serial.println("did not trigger, as expected");
     }
   }
 }
@@ -113,7 +113,7 @@ void testLowAlarm (float temperature, bool alarmExpected) {
       Serial.println("triggered - FAILED");
     }
     else {
-      Serial.println("did not trigger as expected");
+      Serial.println("did not trigger, as expected");
     }
   }
 }

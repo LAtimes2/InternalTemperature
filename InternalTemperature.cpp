@@ -1,5 +1,5 @@
 /* InternalTemperature - read internal temperature of ARM processor
- * Copyright (C) 2020 LAtimes2
+ * Copyright (C) 2021 LAtimes2
  *
  * MIT License
  *
@@ -349,8 +349,8 @@ int InternalTemperatureClass::attachInterruptCelsius (float triggerTemperature, 
     
     attachInterruptVector(IRQ_ADC0, &InternalTemperatureClass::alarmISR);
 
-    // read value to clear COCO
-    int dummy = ADC0_RA;
+    // read register to clear COCO
+    (void) ADC0_RA;
 
     // enable compare
     ADC0_SC2 |= ADC_SC2_ACFE;
