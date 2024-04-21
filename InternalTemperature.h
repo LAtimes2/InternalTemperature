@@ -34,6 +34,8 @@
 #define TEMPERATURE_MAX_ACCURACY 0
 #define TEMPERATURE_NO_ADC_SETTING_CHANGES 1
 
+#include <cinttypes>
+
 class InternalTemperatureClass
 {
 public:
